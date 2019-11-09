@@ -68,8 +68,8 @@ unsigned int Printer::getCols(){
 void Printer::printWinMessage(unsigned int i, unsigned int j, vector<string> winMessage){
   attron(COLOR_PAIR(WIN));
   attron(A_BOLD);
-  for(int i = 0; i < winMessage.size(); i++)
-    mvprintw(i++, j, winMessage.at(i).c_str());
+  for(int strIndex = 0; strIndex < winMessage.size(); strIndex++)
+    mvprintw(i++, j, winMessage.at(strIndex).c_str());
   attroff(A_BOLD);
   attroff(COLOR_PAIR(WIN));
 }
@@ -77,8 +77,8 @@ void Printer::printWinMessage(unsigned int i, unsigned int j, vector<string> win
 void Printer::printLooseMessage(unsigned int i, unsigned int j, vector<string> looseMessage){
   attron(COLOR_PAIR(LOOSE));
   attron(A_BOLD);
-  for(int i = 0; i < looseMessage.size(); i++)
-    mvprintw(i++, j, looseMessage.at(i).c_str());
+  for(int strIndex = 0; strIndex < looseMessage.size(); strIndex++)
+    mvprintw(i++, j, looseMessage.at(strIndex).c_str());
   attroff(A_BOLD);
   attroff(COLOR_PAIR(LOOSE));
 }
