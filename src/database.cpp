@@ -40,6 +40,16 @@ Database::~Database(){
   sqlite3_shutdown();
 }
 
+void Database::initialize(){
+  char* error_message = NULL;
+  string createTablesSqlc;
+  int sqlite_rcode;
+
+  createTablesSqlc = createMatchSqlc.append(createSnakeSqlc).append(foreignKeysOnSqlc);
+  sqlite_rcode = sqlite3_exec(dbConnection, createTablesSqlc.c_str(), NULL, NULL, &error_message);
+  if(sqlite_rcode != SQLITE_OK) throw string(error_message);
+}
+
 string Database::getDbFolderPath(){
   struct passwd* pw;
   const char* homedir;

@@ -18,6 +18,7 @@ int main(int argc, char** argv){
   try{
     //initializing data structures
     Database dbConnection;
+    dbConnection.initialize();
     Board board(printer.getLines(), printer.getCols());
     board.initialize();
     Snake snake(board.getLowestPoint(), board.getHighestPoint());

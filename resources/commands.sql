@@ -17,7 +17,7 @@ y INTEGER NOT NULL,
 matchId INTEGER NOT NULL,
 sequenceNumber INTEGER NOT NULL,
 PRIMARY KEY (x, y, matchId),
-FOREIGN KEY(matchId) REFERENCES Match(matchId) ON DELETE CASCADE;
+FOREIGN KEY(matchId) REFERENCES Match(matchId) ON DELETE CASCADE);
 
 --Enforcing referencial integrity checks in sqlite3
 PRAGMA foreign_keys = ON;
