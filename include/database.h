@@ -1,6 +1,7 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+#include "match_data.h"
 #include "sqlite3.h"
 #include <string>
 
@@ -30,6 +31,7 @@ public:
   Database();
   ~Database();
   void initialize();
+  void insert(match_data matchData);
 };
 
 #endif

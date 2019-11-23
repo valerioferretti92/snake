@@ -9,7 +9,5 @@ gameOver INTEGER NOT NULL DEFAULT 0,
 hasWon INTEGER NOT NULL DEFAULT 0,
 createdOn TEXT NOT NULL);
 
---Retrieve latest open match
-SELECT * FROM Match WHERE gameOver = 0 ORDER BY matchId DESC LIMIT 1;
 --Save match on DB or update its previous record
-INSERT INTO Match VALUES(123456789, 30, 30, 20, 20, 'w', 50, 1, 1, 123456789, 123456789);
+INSERT INTO Match VALUES("123456789", 30, 30, 20, 20, 1, 1, "123456789");

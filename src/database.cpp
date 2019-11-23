@@ -49,6 +49,10 @@ void Database::initialize(){
   if(sqlite_rcode != SQLITE_OK) throw string(error_message);
 }
 
+void Database::insert(match_data matchData){
+  //to implement...
+}
+
 string Database::getDbFolderPath(){
   struct passwd* pw = getpwuid(getuid());
   return string(pw->pw_dir).append("/").append(dbFolderName).append("/");
