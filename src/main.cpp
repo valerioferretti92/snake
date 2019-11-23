@@ -5,12 +5,23 @@
 #include "board.h"
 #include "snake.h"
 #include "utils.h"
+#include "ncurses.h"
+#include <signal.h>
 #include <thread>
 #include <iostream>
 
 using namespace std;
 
+void resizeHandler(int sig){
+  endwin();
+  cout << "I prefer to suicide rather then to resize!" << endl;
+  exit(-1);
+}
+
 int main(int argc, char** argv){
+  //Registering handler for resize signal
+  signal(SIGWINCH, resizeHandler);
+
   //initializing screen
   Printer printer;
   printer.initialize();

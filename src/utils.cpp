@@ -30,7 +30,7 @@ void printMatchSummary(match_data matchData){
 }
 
 void printTotalPlayTime(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2){
-  auto s = chrono::duration_cast<chrono::seconds>((t2 - t1) % chrono::minutes(1)).count();
+  auto s = chrono::duration_cast<chrono::seconds>(t2 - t1).count();
   auto ms = chrono::duration_cast<chrono::milliseconds>((t2 - t1) % chrono::seconds(1)).count();
   cout << "Play Time: " << s << "s " << ms << "ms " << endl;
 }
