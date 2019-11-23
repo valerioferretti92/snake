@@ -50,7 +50,38 @@ void Database::initialize(){
 }
 
 void Database::insert(match_data matchData){
-  //to implement...
+  sqlite3_stmt* insertStmt;
+  int rcode, index;
+
+  //Preparing statement
+  rcode = sqlite3_prepare_v2(dbConnection, insertMatchData.c_str(), -1, &insertStmt, NULL);
+  if(rcode != SQLITE_OK) throw string("Insert statement error at PREPARE stage!");
+
+  //Binding statement parameters
+  index = sqlite3_bind_parameter_index(insertStmt, ":match_id");
+  sqlite3_bind_text(insertStmt, index, matchData.matchId.c_str(), -1, SQLITE_STATIC);
+  index = sqlite3_bind_parameter_index(insertStmt, ":rows");
+  sqlite3_bind_int(insertStmt, index, matchData.rows);
+  index = sqlite3_bind_parameter_index(insertStmt, ":columns");
+  sqlite3_bind_int(insertStmt, index, matchData.columns);
+  index = sqlite3_bind_parameter_index(insertStmt, ":length");
+  sqlite3_bind_int(insertStmt, index, matchData.length);
+  index = sqlite3_bind_parameter_index(insertStmt, ":sleep_time");
+  sqlite3_bind_int(insertStmt, index, matchData.sleepTime);
+  index = sqlite3_bind_parameter_index(insertStmt, ":game_over");
+  sqlite3_bind_int(insertStmt, index, matchData.gameOver ? 1 : 0);
+  index = sqlite3_bind_parameter_index(insertStmt, ":has_won");
+  sqlite3_bind_int(insertStmt, index, matchData.hasWon ? 1 : 0);
+  index = sqlite3_bind_parameter_index(insertStmt, ":timestamp");
+  sqlite3_bind_text(insertStmt, index, matchData.timestamp.c_str(), -1, SQLITE_STATIC);
+
+  //Executing sqlite insert statement
+  rcode = sqlite3_step(insertStmt);
+  if((rcode != SQLITE_DONE) && (rcode != SQLITE_ROW))
+    throw string(sqlite3_expanded_sql(insertStmt));
+
+  //Finalizing statement
+  sqlite3_finalize(insertStmt);
 }
 
 string Database::getDbFolderPath(){

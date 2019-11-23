@@ -24,6 +24,17 @@ private:
       "hasWon INTEGER NOT NULL DEFAULT 0,"
       "timestamp TEXT NOT NULL);";
 
+  string insertMatchData =
+    "INSERT INTO Match VALUES("
+      ":match_id,"
+      ":rows,"
+      ":columns,"
+      ":length,"
+      ":sleep_time,"
+      ":game_over,"
+      ":has_won,"
+      ":timestamp);";
+
   string getDbFolderPath();
   string getDbFilePath();
 
