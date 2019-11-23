@@ -41,6 +41,11 @@ int main(int argc, char** argv){
     thread_uinput.join();
     printer.close();
 
+    //saving match data into sqlite db
+    //to implement...
+    cout << "Id: " << snake.getMatchData().matchId << endl;
+    cout << "Timestamp: " << snake.getMatchData().timestamp << endl;
+
   }catch(string msg){
     printer.close();
     cout << msg << endl;

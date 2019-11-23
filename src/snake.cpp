@@ -1,5 +1,7 @@
 #include "snake.h"
+#include "utils.h"
 #include <math.h>
+#include <iomanip>
 #include <ncurses.h>
 #include <algorithm>
 
@@ -8,6 +10,12 @@
 #define LEFT 'a'
 #define RIGHT 'd'
 #define QUIT 'q'
+
+#define FRAMES_KEY 0
+#define ROWS_KEY 1
+#define COLUMNS_KEY 2
+#define APPLES_KEY 3
+#define SCORE_KEY 4
 
 #define APPLE_INIT_X 3
 #define APPLE_INIT_Y 20
@@ -24,6 +32,8 @@ using namespace std;
 Snake::Snake(Point _lowest, Point _highest): lowest(_lowest), highest(_highest)
 {
   //data initialization
+  matchId = generateIdentifier();
+  initializeScoreMap();
   gameOver.store(false);
   hasWon.store(false);
   scoreData[ROWS_KEY].value = highest.r_index + 1;
@@ -148,6 +158,19 @@ map<unsigned int, score_entry>& Snake::getScore(){
   return scoreData;
 }
 
+match_data Snake::getMatchData(){
+  return {
+    matchId,
+    highest.r_index + 1,
+    highest.c_index + 1,
+    snake.size(),
+    sleepTimeMs,
+    gameOver.load(),
+    hasWon.load(),
+    getTimestamp()
+  };
+}
+
 void Snake::win(){
   gameOver.store(true);
   hasWon.store(true);
@@ -183,4 +206,12 @@ void Snake::printHeadChar(unsigned int i, unsigned int j){
 
 void Snake::printAppleChar(unsigned int i, unsigned int j){
   printer.printAppleChar(i, j);
+}
+
+void Snake::initializeScoreMap(){
+  scoreData[FRAMES_KEY] = {"FRAMES: ", 0};
+  scoreData[ROWS_KEY] = {"ROWS: ", 0};
+  scoreData[COLUMNS_KEY] = {"COLUMNS: ", 0};
+  scoreData[APPLES_KEY] = {"APPLES: ", 0};
+  scoreData[SCORE_KEY] = {"SCORE: ", 0};
 }

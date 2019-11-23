@@ -14,26 +14,14 @@ private:
 
   string createMatchSqlc =
     "CREATE TABLE IF NOT EXISTS Match ("
-      "matchId INTEGER PRIMARY KEY,"
+      "matchId TEXT PRIMARY KEY,"
       "rows INTEGER NOT NULL,"
       "columns INTEGER NOT NULL,"
-      "appleX INTEGER NOT NULL,"
-      "appleY INTEGER NOT NULL,"
-      "cDirection TEXT NOT NULL,"
+      "length INTEGER NOT NULL,"
       "sleepTime INTEGER NOT NULL,"
-      "gameOver INTEGER NOT NULL,"
-      "hasWon INTEGER NOT NULL DEFAULT 0);";
-
-  string createSnakeSqlc =
-    "CREATE TABLE IF NOT EXISTS Snake ("
-      "x INTEGER NOT NULL,"
-      "y INTEGER NOT NULL,"
-      "matchId INTEGER NOT NULL,"
-      "sequenceNumber INTEGER NOT NULL,"
-      "PRIMARY KEY (x, y, matchId),"
-      "FOREIGN KEY(matchId) REFERENCES Match(matchId) ON DELETE CASCADE);";
-
-  string foreignKeysOnSqlc = "PRAGMA foreign_keys = ON";
+      "gameOver INTEGER NOT NULL DEFAULT 0,"
+      "hasWon INTEGER NOT NULL DEFAULT 0,"
+      "timestamp TEXT NOT NULL);";
 
   string getDbFolderPath();
   string getDbFilePath();

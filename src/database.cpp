@@ -18,7 +18,8 @@ Database::Database(){
 
   //initializing sqlite3 library and opening db connection
   sqlite3_initialize();
-  sqlite_rcode = sqlite3_open_v2(getDbFilePath().c_str(), &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+  sqlite_rcode = sqlite3_open_v2(
+    getDbFilePath().c_str(), &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
   if(sqlite_rcode != SQLITE_OK) throw string("Could not open db!");
 }
 
@@ -42,21 +43,15 @@ Database::~Database(){
 
 void Database::initialize(){
   char* error_message = NULL;
-  string createTablesSqlc;
   int sqlite_rcode;
 
-  createTablesSqlc = createMatchSqlc.append(createSnakeSqlc).append(foreignKeysOnSqlc);
-  sqlite_rcode = sqlite3_exec(dbConnection, createTablesSqlc.c_str(), NULL, NULL, &error_message);
+  sqlite_rcode = sqlite3_exec(dbConnection, createMatchSqlc.c_str(), NULL, NULL, &error_message);
   if(sqlite_rcode != SQLITE_OK) throw string(error_message);
 }
 
 string Database::getDbFolderPath(){
-  struct passwd* pw;
-  const char* homedir;
-
-  pw = getpwuid(getuid());
-  homedir = pw->pw_dir;
-  return string(homedir).append("/").append(dbFolderName).append("/");
+  struct passwd* pw = getpwuid(getuid());
+  return string(pw->pw_dir).append("/").append(dbFolderName).append("/");
 }
 
 string Database::getDbFilePath(){

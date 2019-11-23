@@ -1,16 +1,10 @@
 #ifndef SNAKE_H
 #define SNAKE_H
 
-#define FRAMES_KEY 0
-#define ROWS_KEY 1
-#define COLUMNS_KEY 2
-#define APPLES_KEY 3
-#define SCORE_KEY 4
-
 #include "score_entry.h"
+#include "match_data.h"
 #include "printer.h"
 #include "point.h"
-#include <chrono>
 #include <thread>
 #include <atomic>
 #include <queue>
@@ -22,6 +16,7 @@ using namespace std;
 
 class Snake {
 private:
+  string matchId;
   Point lowest;
   Point highest;
   Point apple;
@@ -32,13 +27,7 @@ private:
   unsigned int sleepTimeMs;
   atomic<bool> gameOver;
   atomic<bool> hasWon;
-  map<unsigned int, score_entry> scoreData = {
-    {FRAMES_KEY, getScoreEntry("FRAMES: ", 0)},
-    {ROWS_KEY, getScoreEntry("ROWS: ", 0)},
-    {COLUMNS_KEY, getScoreEntry("COLUMNS: ", 0)},
-    {APPLES_KEY, getScoreEntry("APPLES: ", 0)},
-    {SCORE_KEY, getScoreEntry("SCORE: ", 0)},
-  };
+  map<unsigned int, score_entry> scoreData;
 
   void updateScore(bool hasEaten);
   void printTailChar(unsigned int i, unsigned int j);
@@ -58,10 +47,14 @@ public:
   bool getIsGameOver(); //isGameOver
   bool getHasWon(); //hasWon
   map<unsigned int, score_entry>& getScore();
+  match_data getMatchData();
 
   void delay();
   void win();
   void loose();
+
+private:
+  void initializeScoreMap();
 };
 
 #endif

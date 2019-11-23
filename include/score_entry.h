@@ -10,6 +10,4 @@ struct score_entry{
   unsigned int value;
 };
 
-score_entry getScoreEntry(string text, unsigned int value);
-
 #endif
