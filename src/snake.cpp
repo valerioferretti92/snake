@@ -158,15 +158,31 @@ map<unsigned int, score_entry>& Snake::getScore(){
   return scoreData;
 }
 
-match_data Snake::getMatchData(){
+match_data Snake::getMatchData(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2){
+  double area;
+  double completion;
+  unsigned int durationMs;
+  unsigned int msPerApple;
+
+  //completion percentage
+  area = (highest.r_index + 1) * (double) (highest.c_index + 1);
+  completion = snake.size() / (double) area;
+  //duration
+  durationMs = chrono::duration_cast<chrono::milliseconds>(t2 - t1).count();
+  //avergae ms per apple
+  if(snake.size() == 10) msPerApple = 0;
+  else msPerApple = durationMs / (snake.size() - 10);
   return {
     matchId,
     highest.r_index + 1,
     highest.c_index + 1,
     snake.size(),
+    completion,
     sleepTimeMs,
+    msPerApple,
     gameOver.load(),
     hasWon.load(),
+    durationMs,
     getTimestamp()
   };
 }

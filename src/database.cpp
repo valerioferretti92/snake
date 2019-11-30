@@ -66,12 +66,18 @@ void Database::insert(match_data matchData){
   sqlite3_bind_int(insertStmt, index, matchData.columns);
   index = sqlite3_bind_parameter_index(insertStmt, ":length");
   sqlite3_bind_int(insertStmt, index, matchData.length);
+  index = sqlite3_bind_parameter_index(insertStmt, ":completion");
+  sqlite3_bind_double(insertStmt, index, matchData.completion);
   index = sqlite3_bind_parameter_index(insertStmt, ":sleep_time");
   sqlite3_bind_int(insertStmt, index, matchData.sleepTime);
+  index = sqlite3_bind_parameter_index(insertStmt, ":ms_per_apple");
+  sqlite3_bind_int(insertStmt, index, matchData.msPerApple);
   index = sqlite3_bind_parameter_index(insertStmt, ":game_over");
   sqlite3_bind_int(insertStmt, index, matchData.gameOver ? 1 : 0);
   index = sqlite3_bind_parameter_index(insertStmt, ":has_won");
   sqlite3_bind_int(insertStmt, index, matchData.hasWon ? 1 : 0);
+  index = sqlite3_bind_parameter_index(insertStmt, ":duration");
+  sqlite3_bind_int(insertStmt, index, matchData.duration);
   index = sqlite3_bind_parameter_index(insertStmt, ":timestamp");
   sqlite3_bind_text(insertStmt, index, matchData.timestamp.c_str(), -1, SQLITE_STATIC);
 

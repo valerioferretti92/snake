@@ -19,9 +19,12 @@ private:
       "rows INTEGER NOT NULL,"
       "columns INTEGER NOT NULL,"
       "length INTEGER NOT NULL,"
+      "completion REAL NOT NULL,"
       "sleepTime INTEGER NOT NULL,"
+      "msPerApple INTEGER NOT NULL,"
       "gameOver INTEGER NOT NULL DEFAULT 0,"
       "hasWon INTEGER NOT NULL DEFAULT 0,"
+      "duration INTEGER NOT NULL,"
       "timestamp TEXT NOT NULL);";
 
   string insertMatchData =
@@ -30,9 +33,12 @@ private:
       ":rows,"
       ":columns,"
       ":length,"
+      ":completion,"
       ":sleep_time,"
+      ":ms_per_apple,"
       ":game_over,"
       ":has_won,"
+      ":duration,"
       ":timestamp);";
 
   string getDbFolderPath();

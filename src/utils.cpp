@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <chrono>
 
@@ -22,15 +23,26 @@ string getTimestamp() {
   return timestamp.str();
 }
 
+string getPlaytimeAsString(unsigned int duration){
+  stringstream ss;
+
+  ss << duration / 1000 << "s " << duration % 1000 << "ms ";
+  return ss.str();
+}
+
+string getCompletionAsString(double completion){
+  stringstream ss;
+
+  ss << setprecision(3) << completion * 100 << "%";
+  return ss.str();
+}
+
 void printMatchSummary(match_data matchData){
   cout << "Area: " << matchData.rows * matchData.columns << endl;
   cout << "Snake Length: " << matchData.length << endl;
+  cout << "Completion: " << getCompletionAsString(matchData.completion) << endl;
   cout << "Sleep Time: " << matchData.sleepTime << endl;
+  cout << "Ms per Apple: " << matchData.msPerApple << endl;
   cout << "Victory: " << matchData.hasWon << endl;
-}
-
-void printTotalPlayTime(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2){
-  auto s = chrono::duration_cast<chrono::seconds>(t2 - t1).count();
-  auto ms = chrono::duration_cast<chrono::milliseconds>((t2 - t1) % chrono::seconds(1)).count();
-  cout << "Play Time: " << s << "s " << ms << "ms " << endl;
+  cout << "Play time: " << getPlaytimeAsString(matchData.duration) << endl;
 }

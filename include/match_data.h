@@ -10,9 +10,12 @@ struct match_data{
   unsigned int rows;
   unsigned int columns;
   long unsigned int length;
+  double completion;
   unsigned int sleepTime;
+  unsigned int msPerApple;
   bool gameOver;
   bool hasWon;
+  unsigned int duration;
   string timestamp;
 };
 

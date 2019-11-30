@@ -54,13 +54,10 @@ int main(int argc, char** argv){
     thread_uinput.join();
     printer.close();
 
-    //saving match data into sqlite db
-    match_data matchData = snake.getMatchData();
+    //saving into sqlite db and printing out match data
+    match_data matchData = snake.getMatchData(t1, t2);
     database.insert(matchData);
-
-    //printing out match info as summary
     printMatchSummary(matchData);
-    printTotalPlayTime(t1, t2);
 
   }catch(string msg){
     printer.close();

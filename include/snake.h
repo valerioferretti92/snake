@@ -47,7 +47,7 @@ public:
   bool getIsGameOver(); //isGameOver
   bool getHasWon(); //hasWon
   map<unsigned int, score_entry>& getScore();
-  match_data getMatchData();
+  match_data getMatchData(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2);
 
   void delay();
   void win();
