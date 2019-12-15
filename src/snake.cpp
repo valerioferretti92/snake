@@ -108,6 +108,7 @@ void Snake::getUserInput(){
     if(direction == RIGHT && userInput == LEFT) continue;
     if(direction == DOWN && userInput == UP) continue;
     if(direction == LEFT && userInput == RIGHT) continue;
+    if(paused.load() && userInput != PAUSEPLAY) continue;
     //termination char if game was not paused
     if(userInput == QUIT && !paused.load()) break;
     //termination char if game was paused
