@@ -193,7 +193,7 @@ void Snake::update(Point nhead){
   if(nhead == apple){
     apple = computeNewApple();
     printAppleChar(apple.r_index, apple.c_index);
-    sleepTimeMs = sleepTimeMs - 1;
+    sleepTimeMs = sleepTimeMs > 40 ? sleepTimeMs - 1 : sleepTimeMs;
     updateScore(true);
   } else {
     snake.pop_back();
