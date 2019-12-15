@@ -5,6 +5,8 @@
 #include "match_data.h"
 #include "printer.h"
 #include "point.h"
+#include <condition_variable>
+#include <mutex>
 #include <thread>
 #include <atomic>
 #include <queue>
@@ -13,6 +15,8 @@
 #include <set>
 
 using namespace std;
+
+enum MatchStatus {WON, LOST, ONGOING};
 
 class Snake {
 private:
@@ -28,8 +32,22 @@ private:
   atomic<bool> gameOver;
   atomic<bool> hasWon;
   map<unsigned int, score_entry> scoreData;
+  atomic<bool> paused;
+  mutex mmutex;
+  condition_variable mcvariable;
+  list<chrono::system_clock::time_point> pauseStartTimes;
+  list<chrono::system_clock::time_point> pauseStopTimes;
 
+  void update(Point nhead);
+  Point computeNewHead();
+  Point computeNewApple();
+  MatchStatus computeMatchStatus(Point nhead);
+  void delay();
+  void win();
+  void loose();
   void updateScore(bool hasEaten);
+  void initializeScoreMap();
+  unsigned int getPlayTime(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2);
   void printTailChar(unsigned int i, unsigned int j);
   void printHeadChar(unsigned int i, unsigned int j);
   void printAppleChar(unsigned int i, unsigned int j);
@@ -37,24 +55,12 @@ private:
 public:
   Snake(Point _lowest, Point _highest);
 
-  void getUserInput();
   void initialize();
-  Point computeNewHead();
-  Point computeNewApple();
-  void update(Point nhead);
-
-  bool getIsFeasible(Point nhead); //isFeasible
-  bool getIsGameOver(); //isGameOver
-  bool getHasWon(); //hasWon
-  map<unsigned int, score_entry>& getScore();
+  void getUserInput();
+  map<unsigned int, score_entry>& move();
+  bool getIsGameOver();
+  bool getHasWon();
   match_data getMatchData(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2);
-
-  void delay();
-  void win();
-  void loose();
-
-private:
-  void initializeScoreMap();
 };
 
 #endif

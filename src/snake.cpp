@@ -10,6 +10,7 @@
 #define LEFT 'a'
 #define RIGHT 'd'
 #define QUIT 'q'
+#define PAUSEPLAY 'r'
 
 #define FRAMES_KEY 0
 #define ROWS_KEY 1
@@ -36,6 +37,7 @@ Snake::Snake(Point _lowest, Point _highest): lowest(_lowest), highest(_highest)
   initializeScoreMap();
   gameOver.store(false);
   hasWon.store(false);
+  paused.store(false);
   scoreData[ROWS_KEY].value = highest.r_index + 1;
   scoreData[COLUMNS_KEY].value = highest.c_index + 1;
   apple.r_index = APPLE_INIT_X;
@@ -74,23 +76,131 @@ void Snake::initialize(){
   printAppleChar(apple.r_index, apple.c_index);
 }
 
+//function that implements one snake move
+map<unsigned int, score_entry>& Snake::move(){
+  unique_lock<mutex> ulock(mmutex);
+  mcvariable.wait(ulock, [this](){ return !paused.load(); });
+  ulock.unlock();
+
+  Point nhead = computeNewHead();
+  delay();
+  switch(computeMatchStatus(nhead)){
+    case WON: win(); break;
+    case LOST: loose(); break;
+    case ONGOING: update(nhead); break;
+  }
+  return scoreData;
+}
+
+//function that read input from user to control the snake
 void Snake::getUserInput(){
   static char direction = SNAKE_INIT_DIR;
 
-  do{
-    char nextDir = getch();
-    if(nextDir != UP && nextDir != DOWN && nextDir != LEFT && nextDir != RIGHT && nextDir != QUIT) continue;
-    if(nextDir == direction) continue;
-    if(direction == UP && nextDir == DOWN) continue;
-    if(direction == RIGHT && nextDir == LEFT) continue;
-    if(direction == DOWN && nextDir == UP) continue;
-    if(direction == LEFT && nextDir == RIGHT) continue;
-    if(nextDir == QUIT) break;
-    nextDirs.push(nextDir);
-    direction = nextDir;
-  }while(1);
+  while(1){
+    char userInput = getch();
+    //whitelist of allowed char
+    list<char> wlist = {UP, DOWN, LEFT, RIGHT, QUIT, PAUSEPLAY};
+    list<char>::iterator it = find(wlist.begin(), wlist.end(), userInput);
+    if(it == wlist.end()) continue;
+    //skipping not allowed combination
+    if(userInput == direction) continue;
+    if(direction == UP && userInput == DOWN) continue;
+    if(direction == RIGHT && userInput == LEFT) continue;
+    if(direction == DOWN && userInput == UP) continue;
+    if(direction == LEFT && userInput == RIGHT) continue;
+    //termination char if game was not paused
+    if(userInput == QUIT && !paused.load()) break;
+    //termination char if game was paused
+    if(userInput == QUIT && paused.load()){
+      pauseStopTimes.push_front(std::chrono::system_clock::now());
+      paused.store(false);
+      mcvariable.notify_all();
+      break;
+    }
+    //pause char
+    if(userInput == PAUSEPLAY && !paused.load()){
+      pauseStartTimes.push_front(std::chrono::system_clock::now());
+      paused.store(true);
+      mcvariable.notify_all();
+      continue;
+    }
+    //play char
+    if(userInput == PAUSEPLAY && paused.load()){
+      pauseStopTimes.push_front(std::chrono::system_clock::now());
+      paused.store(false);
+      mcvariable.notify_all();
+      continue;
+    }
+    //storing next move
+    nextDirs.push(userInput);
+    direction = userInput;
+  }
 
   gameOver.store(true);
+}
+
+//true if the game has been lost or won, false otherwise
+bool Snake::getIsGameOver(){
+  return gameOver.load();
+}
+
+//true if the game has been won, false otherwise
+bool Snake::getHasWon(){
+  return hasWon.load();
+}
+
+//return a snapshot of snake data
+match_data Snake::getMatchData(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2){
+  double area;
+  double completion;
+  unsigned int durationMs;
+  unsigned int msPerApple;
+
+  //completion percentage
+  area = (highest.r_index + 1) * (double) (highest.c_index + 1);
+  completion = snake.size() / (double) area;
+  //duration
+  durationMs = getPlayTime(t1, t2);
+  //avergae ms per apple
+  if(snake.size() == 10) msPerApple = 0;
+  else msPerApple = durationMs / (snake.size() - 10);
+  return {
+    matchId,
+    highest.r_index + 1,
+    highest.c_index + 1,
+    snake.size(),
+    completion,
+    sleepTimeMs,
+    msPerApple,
+    gameOver.load(),
+    hasWon.load(),
+    durationMs,
+    getTimestamp()
+  };
+}
+
+/****************************** PRIVATE METHODS ******************************/
+
+void Snake::update(Point nhead){
+  Point ohead = snake.front();
+  Point tail = snake.back();
+
+  snake.push_front(nhead);
+  appleCandidates.erase(nhead);
+  printTailChar(ohead.r_index, ohead.c_index);
+  printHeadChar(nhead.r_index, nhead.c_index);
+
+  if(nhead == apple){
+    apple = computeNewApple();
+    printAppleChar(apple.r_index, apple.c_index);
+    sleepTimeMs = sleepTimeMs - 1;
+    updateScore(true);
+  } else {
+    snake.pop_back();
+    appleCandidates.insert(tail);
+    printer.deleteTailChar(tail.r_index, tail.c_index);
+    updateScore(false);
+  }
 }
 
 Point Snake::computeNewHead(){
@@ -115,76 +225,23 @@ Point Snake::computeNewApple(){
   return *it;
 }
 
-void Snake::update(Point nhead){
-  Point ohead = snake.front();
-  Point tail = snake.back();
-
-  snake.push_front(nhead);
-  appleCandidates.erase(nhead);
-  printTailChar(ohead.r_index, ohead.c_index);
-  printHeadChar(nhead.r_index, nhead.c_index);
-
-  if(nhead == apple){
-    apple = computeNewApple();
-    printAppleChar(apple.r_index, apple.c_index);
-    sleepTimeMs = sleepTimeMs - 1;
-    updateScore(true);
-  } else {
-    snake.pop_back();
-    appleCandidates.insert(tail);
-    printer.deleteTailChar(tail.r_index, tail.c_index);
-    updateScore(false);
+MatchStatus Snake::computeMatchStatus(Point nhead){
+  //won
+  if(snake.size() == (scoreData[ROWS_KEY].value * scoreData[COLUMNS_KEY].value)){
+    return WON;
   }
-}
-
-bool Snake::getIsFeasible(Point nhead){
+  //lost
   list<Point>::iterator it;
   it = std::find(snake.begin(), snake.end(), nhead);
-  if(it != snake.end()) return false;
-  if(nhead.r_index < lowest.r_index || nhead.r_index > highest.r_index) return false;
-  if(nhead.c_index < lowest.c_index || nhead.c_index > highest.c_index) return false;
-  return true;
-}
-
-bool Snake::getIsGameOver(){
-  return gameOver.load();
-}
-
-bool Snake::getHasWon(){
-  return snake.size() == (scoreData[ROWS_KEY].value * scoreData[COLUMNS_KEY].value);
-}
-
-map<unsigned int, score_entry>& Snake::getScore(){
-  return scoreData;
-}
-
-match_data Snake::getMatchData(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2){
-  double area;
-  double completion;
-  unsigned int durationMs;
-  unsigned int msPerApple;
-
-  //completion percentage
-  area = (highest.r_index + 1) * (double) (highest.c_index + 1);
-  completion = snake.size() / (double) area;
-  //duration
-  durationMs = chrono::duration_cast<chrono::milliseconds>(t2 - t1).count();
-  //avergae ms per apple
-  if(snake.size() == 10) msPerApple = 0;
-  else msPerApple = durationMs / (snake.size() - 10);
-  return {
-    matchId,
-    highest.r_index + 1,
-    highest.c_index + 1,
-    snake.size(),
-    completion,
-    sleepTimeMs,
-    msPerApple,
-    gameOver.load(),
-    hasWon.load(),
-    durationMs,
-    getTimestamp()
-  };
+  if(it != snake.end()) return LOST;
+  if(nhead.r_index < lowest.r_index || nhead.r_index > highest.r_index){
+    return LOST;
+  }
+  if(nhead.c_index < lowest.c_index || nhead.c_index > highest.c_index){
+    return LOST;
+  }
+  //ongoing
+  return ONGOING;
 }
 
 void Snake::win(){
@@ -212,6 +269,37 @@ void Snake::updateScore(bool hasEaten){
   }
 }
 
+void Snake::initializeScoreMap(){
+  scoreData[FRAMES_KEY] = {"FRAMES: ", 0};
+  scoreData[ROWS_KEY] = {"ROWS: ", 0};
+  scoreData[COLUMNS_KEY] = {"COLUMNS: ", 0};
+  scoreData[APPLES_KEY] = {"APPLES: ", 0};
+  scoreData[SCORE_KEY] = {"SCORE: ", 0};
+}
+
+unsigned int Snake::getPlayTime(chrono::system_clock::time_point t1, chrono::system_clock::time_point t2){
+  string errorMessage = "Playtime calculation failed!";
+  unsigned int totalPauseDurationMs = 0;
+  unsigned int totalDurationMs;
+  unsigned int pauseNumber = 0;
+
+  //computing total pause duration in ms
+  if(pauseStopTimes.size() != pauseStartTimes.size()) throw errorMessage;
+  pauseNumber = pauseStopTimes.size();
+  for(unsigned int i = 0; i < pauseNumber; i++){
+    chrono::system_clock::time_point t1 = pauseStartTimes.front();
+    chrono::system_clock::time_point t2 = pauseStopTimes.front();
+    unsigned int pauseDurationMs = chrono::duration_cast<chrono::milliseconds>(t2 - t1).count();
+    totalPauseDurationMs = totalPauseDurationMs + pauseDurationMs;
+    pauseStartTimes.pop_front();
+    pauseStopTimes.pop_front();
+  }
+  //computing total duration in ms
+  totalDurationMs = chrono::duration_cast<chrono::milliseconds>(t2 - t1).count();
+  //returning total play time
+  return totalDurationMs - totalPauseDurationMs;
+}
+
 void Snake::printTailChar(unsigned int i, unsigned int j){
   printer.printTailChar(i, j);
 }
@@ -222,12 +310,4 @@ void Snake::printHeadChar(unsigned int i, unsigned int j){
 
 void Snake::printAppleChar(unsigned int i, unsigned int j){
   printer.printAppleChar(i, j);
-}
-
-void Snake::initializeScoreMap(){
-  scoreData[FRAMES_KEY] = {"FRAMES: ", 0};
-  scoreData[ROWS_KEY] = {"ROWS: ", 0};
-  scoreData[COLUMNS_KEY] = {"COLUMNS: ", 0};
-  scoreData[APPLES_KEY] = {"APPLES: ", 0};
-  scoreData[SCORE_KEY] = {"SCORE: ", 0};
 }

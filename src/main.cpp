@@ -35,18 +35,13 @@ int main(int argc, char** argv){
     Snake snake(board.getLowestPoint(), board.getHighestPoint());
     snake.initialize();
 
+    //user input management in a separate thread
+    thread thread_uinput(&Snake::getUserInput, &snake);
+
     //playing
     auto t1 = std::chrono::system_clock::now();
-    thread thread_uinput(&Snake::getUserInput, &snake);
     while(!snake.getIsGameOver()){
-      Point nhead = snake.computeNewHead();
-      snake.delay();
-      if(snake.getHasWon()) snake.win();
-      else if(!snake.getIsFeasible(nhead)) snake.loose();
-      else {
-        snake.update(nhead);
-        board.updateScore(snake.getScore());
-      }
+      board.updateScore(snake.move());
       if(snake.getIsGameOver()) board.printMessage(snake.getHasWon());
       printer.flush();
     }
