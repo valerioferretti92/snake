@@ -14,6 +14,8 @@ The following keys allow you to move the snake, quit and pause the game:
 - **'d'**: move the snake RIGHT (has no effect if the snake is already moving LEFT or RIGHT);
 - **'w'**: move the snake UP (has no effect if the snake is already moving UP or DOWN);
 - **'s'**: move the snake DOWN (has no effect if the snake is already moving UP or DOWN);
+- **'q'**: quit the game;
+- **'r'**: pause/resume the game;
 
 ### How to compile and execute
 
