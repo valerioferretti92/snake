@@ -1,8 +1,6 @@
 #include "point.h"
 
-using namespace std;
-
-Point::Point(unsigned int _r_index = 1, unsigned int _c_index = 1):
+Point::Point(unsigned int _r_index, unsigned int _c_index):
   r_index(_r_index), c_index(_c_index){ }
 
 Point Point::getNext(Point lowest, Point highest){
