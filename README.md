@@ -1,6 +1,6 @@
 # Snake
 
-Terminal based implementation of the Snake game for Linux, written in C++.
+Terminal based implementation of the Snake game for Linux, written in C++. The code and makefile has recently been adapted for Darwin as well. Dependencies installation instructions are provided for *apt* package manager only.
 
 ### How to play
 
@@ -18,6 +18,11 @@ The following keys allow you to move the snake, quit and pause the game:
 - **'r'**: pause/resume the game;
 
 ### How to compile and execute
+Dependencies (Linux):
+
+```
+$ sudo apt install libsqlite3-dev libncurses5-dev g++ gcc make 
+```
 
 To compile and install:
 
